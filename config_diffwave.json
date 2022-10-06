@@ -1,0 +1,84 @@
+{
+    "name": "SDDM_DiffWave",
+    "n_gpu": 0,
+    "sample_rate": 16000,
+    "n_spec_frames": 62,
+    "spectrogram": {
+        "is_mel": false,
+        "window_length": 1024,
+        "hop_samples": 256,
+        "center": true,
+        "pad_mode": "reflect"
+    },
+    "arch": {
+        "type": "SDDM",
+        "args": {
+            "noise_condition": "time_step",
+            "q_transition": "conditional",
+            "p_transition": "conditional"
+        }
+    },
+    "diffusion": {
+        "type": "GaussianDiffusion",
+        "args": {
+            "schedule": "linear",
+            "n_timestep": 50,
+            "linear_start": 1e-4,
+            "linear_end": 0.035
+        }
+    },
+    "network": {
+        "type": "DiffWave",
+        "args": {
+            "residual_channels": 64,
+            "residual_layers": 30,
+            "dilation_cycle_length": 10
+        }
+    },
+
+    "tr_dataset": {
+        "type": "AudioSpecDataset",
+        "args":{
+            "data_root": "data/Voicebank-DEMAND/train_28spk"
+        }
+    },
+    "val_dataset": {
+        "type": "AudioSpecDataset",
+        "args":{
+            "data_root": "data/Voicebank-DEMAND/test"
+        }
+    },
+    "data_loader": {
+        "type": "DataLoader",
+        "args":{
+            "batch_size": 8,
+            "num_workers": 1,
+            "shuffle": true
+        }
+    },
+    "optimizer": {
+        "type": "Adam",
+        "args":{
+            "lr": 0.0002
+        }
+    },
+    "loss": "l1_loss",
+    "metrics": [
+        "sisnr"
+    ],
+    "trainer": {
+        "epochs": 100,
+
+        "save_dir": "saved/",
+        "save_period": 1,
+        "valid_period": 1,
+        "verbosity": 2,
+        "n_valid_data_batch": 1,
+        "log_step": 1,
+
+        "monitor": "min val_loss",
+        "early_stop": -1,
+
+        "tensorboard": true
+    }
+}

@@ -1,0 +1,92 @@
+{
+    "name": "SDDM2_UNet",
+    "n_gpu": 1,
+    "sample_rate": 16000,
+    "n_spec_frames": 128,
+    "spectrogram": {
+        "is_mel": false,
+        "window_length": 256,
+        "hop_samples": 128,
+        "center": true,
+        "pad_mode": "reflect"
+    },
+    "arch": {
+        "type": "SDDM",
+        "args": {
+            "p_transition": "original",
+            "q_transition": "original"
+        }
+    },
+
+    "diffusion": {
+        "type": "GaussianDiffusion",
+        "args": {
+            "schedule": "linear",
+            "n_timestep": 1000,
+            "linear_start": 1e-6,
+            "linear_end": 0.01
+        }
+    },
+    "network": {
+        "type": "UNetWithSpec",
+        "args": {
+            "in_channel": 3,
+            "out_channel": 1,
+            "inner_channel": 32,
+            "norm_groups": 32,
+            "channel_mults": [1,2,3,4,5],
+            "res_blocks": 1,
+            "dropout": 0
+        }
+    },
+
+    "tr_dataset": {
+        "type": "AudioSpecDataset",
+        "args":{
+            "data_root": "data/Voicebank-DEMAND-2/train_28spk",
+            "use_spec_pad": true
+        }
+    },
+    "val_dataset": {
+        "type": "AudioSpecDataset",
+        "args":{
+            "data_root": "data/Voicebank-DEMAND-2/test",
+            "use_spec_pad": true
+        }
+    },
+    "data_loader": {
+        "type": "DataLoader",
+        "args":{
+            "batch_size": 32,
+            "shuffle": true,
+            "num_workers": 4
+        }
+    },
+    "optimizer": {
+        "type": "Adam",
+        "args":{
+            "lr": 0.0002,
+            "weight_decay": 0,
+            "amsgrad": true
+        }
+    },
+    "loss": "l1_loss",
+    "metrics": [
+        "sisnr"
+    ],
+    "trainer": {
+        "epochs": 100,
+
+        "save_dir": "saved/",
+        "save_period": 1,
+        "valid_period": 1,
+        "verbosity": 2,
+        "n_valid_data_batch": 1,
+        "log_step": 10,
+        
+        "monitor": "min val_loss",
+        "early_stop": -1,
+
+        "tensorboard": true
+    }
+}
